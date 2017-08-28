@@ -1,0 +1,4 @@
+[root]
+name = "rust-line-counter"
+version = "0.1.0"
+
