@@ -1,15 +1,24 @@
-use std::fs;
-use std::path::PathBuf;
-use std::fs::ReadDir;
-use std::fs::*;
 use std::env;
+use std::fs;
+use std::fs::File;
+use std::fs::ReadDir;
+use std::io::BufReader;
+use std::io::prelude::*;
+use std::path::PathBuf;
 
-fn main() {
-    let args = env::args().collect::<Vec<_>>();
-    let path_name = if args.len() > 1 { &args[1] } else { "." };
-    if let Ok(count) = fs::read_dir(path_name).map(recursively_count_rust_lines) {
-        println!("Lines of Rust in directory {:?} and its children = {}", path_name, count);
+fn count_lines(file_name: PathBuf) -> usize {  
+    let f = File::open(file_name).unwrap();
+    let f = BufReader::new(f);    
+    //f.lines().count() 
+    let mut count = 0;
+    for line in f.lines() {
+        if let Ok(line) = line {
+            if line.len() != 0 {
+                count += 1;
+            }
+        }
     }
+    count
 }
 
 fn recursively_count_rust_lines(path: ReadDir) -> usize {
@@ -31,11 +40,10 @@ fn recursively_count_rust_lines(path: ReadDir) -> usize {
     count
 }
 
-fn count_lines(file_name: PathBuf) -> usize {
-    use std::io::BufReader;
-    use std::io::prelude::*;
-    use std::fs::File;
-    let f = File::open(file_name).unwrap();
-    let f = BufReader::new(f);
-    f.lines().count()
+fn main() {
+    let args = env::args().collect::<Vec<_>>();
+    let path_name = if args.len() > 1 { &args[1] } else { "." };
+    if let Ok(count) = fs::read_dir(path_name).map(recursively_count_rust_lines) {
+        println!("Lines of Rust in directory {:?} and its subdirectories = {}", path_name, count);
+    }
 }
